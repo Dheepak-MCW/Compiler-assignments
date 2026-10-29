@@ -514,3 +514,141 @@ LLVM IR optimization
 ```
 
 The LLVM passes are implemented as standalone plugins and executed using `mini-opt`. The matrix multiplication experiments demonstrate the performance impact of loop transformations on a real numerical workload.
+
+Steps to run on windows :
+
+# Windows Build and Run Guide — LLVM Optimization Passes
+
+**Repository:** https://github.com/Dheepak-MCW/Compiler-assignments
+
+Follow these steps from a Windows machine to build and run the optimization passes.
+
+## 1. Prerequisites
+
+Install:
+- Visual Studio 2022 with **Desktop development with C++**
+- CMake
+- Git
+- A compatible LLVM source/build or development installation containing `LLVMConfig.cmake`, LLVM headers, and libraries
+
+Use the same compatible LLVM version when building `mini-opt` and the plugins. Do not mix plugins built against different LLVM versions.
+
+## 2. Clone the repository
+
+Open **Command Prompt (CMD)**:
+
+```cmd
+git clone https://github.com/Dheepak-MCW/Compiler-assignments.git
+cd Compiler-assignments
+```
+
+## 3. Initialize the C++ compiler environment
+
+Run this command in CMD:
+
+```cmd
+call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+```
+
+Verify the tools:
+
+```cmd
+cl
+cmake --version
+```
+
+If Visual Studio is installed in another location or edition, use the corresponding `vcvars64.bat` path.
+
+## 4. Configure the LLVM path
+
+Locate the folder containing `LLVMConfig.cmake`. For example:
+
+```text
+C:\path\to\llvm-project\build\lib\cmake\llvm
+```
+
+In each project’s `CMakeLists.txt`, remove or comment out any hardcoded `LLVM_DIR` assignment pointing to another developer’s computer. Supply your own path using `-DLLVM_DIR` in the commands below.
+
+## 5. Build `mini-opt`
+
+From the repository root:
+
+```cmd
+cmake -S mini-opt -B mini-opt\build -G "Visual Studio 17 2022" -A x64 -DLLVM_DIR="C:\path\to\llvm-project\build\lib\cmake\llvm"
+cmake --build mini-opt\build --config Release
+```
+
+Replace the example LLVM path with the actual path on your computer.
+
+## 6. Build and run each optimization pass
+
+Run these commands from the repository root in CMD. For each pass, configure and build its plugin first, then run it through `mini-opt`.
+
+### A. Dead Code Elimination
+
+```cmd
+cmake -S dead-code-elimination -B dead-code-elimination\build -G "Visual Studio 17 2022" -A x64 -DLLVM_DIR="C:\path\to\llvm-project\build\lib\cmake\llvm"
+cmake --build dead-code-elimination\build --config Release
+mini-opt\build\Release\mini-opt.exe -load-pass-plugin="dead-code-elimination\build\Release\DeadCodeElimination.dll" -passes="dead-code-elimination" "dead-code-elimination\DeadCodeElimination_before.ll" -o "dead-code-elimination\DeadCodeElimination_after.ll"
+type dead-code-elimination\DeadCodeElimination_after.ll
+```
+
+### B. Algebraic Identity
+
+```cmd
+cmake -S algebraic-identity -B algebraic-identity\build -G "Visual Studio 17 2022" -A x64 -DLLVM_DIR="C:\path\to\llvm-project\build\lib\cmake\llvm"
+cmake --build algebraic-identity\build --config Release
+mini-opt\build\Release\mini-opt.exe -load-pass-plugin="algebraic-identity\build\Release\AlgebraicIdentity.dll" -passes="algebraic-identity" "algebraic-identity\Algebraic_before.ll" -o "algebraic-identity\AlgebraicIdentity_after.ll"
+type algebraic-identity\AlgebraicIdentity_after.ll
+```
+
+### C. Constant Folding
+
+```cmd
+cmake -S constant-folding -B constant-folding\build -G "Visual Studio 17 2022" -A x64 -DLLVM_DIR="C:\path\to\llvm-project\build\lib\cmake\llvm"
+cmake --build constant-folding\build --config Release
+mini-opt\build\Release\mini-opt.exe -load-pass-plugin="constant-folding\build\Release\ConstantFolding.dll" -passes="constant-folding" "constant-folding\ConstantFolding_before.ll" -o "constant-folding\ConstantFolding_after.ll"
+type constant-folding\ConstantFolding_after.ll
+```
+
+### D. Constant Propagation
+
+```cmd
+cmake -S constant-propagation -B constant-propagation\build -G "Visual Studio 17 2022" -A x64 -DLLVM_DIR="C:\path\to\llvm-project\build\lib\cmake\llvm"
+cmake --build constant-propagation\build --config Release
+mini-opt\build\Release\mini-opt.exe -load-pass-plugin="constant-propagation\build\Release\ConstantPropagation.dll" -passes="constant-propagation" "constant-propagation\test.ll" -o "constant-propagation\test_output.ll"
+type constant-propagation\test_output.ll
+```
+
+### E. Copy Propagation
+
+```cmd
+cmake -S copy-propagation -B copy-propagation\build -G "Visual Studio 17 2022" -A x64 -DLLVM_DIR="C:\path\to\llvm-project\build\lib\cmake\llvm"
+cmake --build copy-propagation\build --config Release
+mini-opt\build\Release\mini-opt.exe -load-pass-plugin="copy-propagation\build\Release\CopyPropagation.dll" -passes="copy-propagation" "copy-propagation\CopyPropagation_before.ll" -o "copy-propagation\CopyPropagation_after.ll"
+type copy-propagation\CopyPropagation_after.ll
+```
+
+### F. Redundant Store Elimination
+
+```cmd
+cmake -S redundant-store-elimination -B redundant-store-elimination\build -G "Visual Studio 17 2022" -A x64 -DLLVM_DIR="C:\path\to\llvm-project\build\lib\cmake\llvm"
+cmake --build redundant-store-elimination\build --config Release
+mini-opt\build\Release\mini-opt.exe -load-pass-plugin="redundant-store-elimination\build\Release\RedundantStoreElimination.dll" -passes="redundant-store-elimination" "redundant-store-elimination\RedundantStoreElimination_before.ll" -o "redundant-store-elimination\RedundantStoreElimination_after.ll"
+type redundant-store-elimination\RedundantStoreElimination_after.ll
+```
+
+### G. Strength Reduction
+
+```cmd
+cmake -S strength-reduction -B strength-reduction\build -G "Visual Studio 17 2022" -A x64 -DLLVM_DIR="C:\path\to\llvm-project\build\lib\cmake\llvm"
+cmake --build strength-reduction\build --config Release
+mini-opt\build\Release\mini-opt.exe -load-pass-plugin="strength-reduction\build\Release\StrengthReduction.dll" -passes="strength-reduction" "strength-reduction\StrengthReduction_before.ll" -o "strength-reduction\StrengthReduction_after.ll"
+type strength-reduction\StrengthReduction_after.ll
+```
+
+## 7. Verify the results
+
+Check each generated `*_after.ll` or `test_output.ll` file. The optimized IR should reflect the transformation implemented by that pass.
+
+If a command reports that a file or DLL is missing, check the folder contents and ensure that the corresponding CMake configure and build steps completed successfully.
